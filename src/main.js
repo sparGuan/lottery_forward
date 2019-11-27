@@ -1,0 +1,70 @@
+import Vue from 'vue'
+import App from './App.vue'
+import "@/assets/css/commomStyle.css" 
+import Vant from 'vant'
+import 'vant/lib/index.css'
+import router from './router'
+import store from './store'
+import "amfe-flexible";//px转rem
+import "@/components/vant-prompt.js" 
+
+import axios from "@/assets/script/axios-config.js"; //请求拦截
+Vue.prototype.$axios = axios;
+
+
+import { Interface } from '@/assets/script/api/Interface.js'
+// 验真及app授权
+Vue.prototype.$axios({
+    ...Interface.usercheckReal,
+    data: {
+        "text": {
+            "uId": "221",
+            "uN": "18779239915",
+            "ts": "1574415580984",
+            "s": "iQqEBhfa7X2hvUsWHTbMy1NXo+ax6laBHnv0VQEFVtLYseZoFGcSjfMxUMckLMINd1zuVPtUjl5UBBszhr1MNaS+rVGXbwKQK2Bx3AiW/2JSoiT21bdEs8xosfIbQdM8pkhyPpnh+9RlSaWo4y6R5rDJZpZwgnfZw6YiyIXe3Z0="
+        }
+    }
+})
+.then((response)=>{
+    Vue.prototype.$axios({
+        ...Interface.oauth2access_token,
+        data: {
+            grant_type: 'client_credentials'
+        },
+        headers: {
+            Authorization: response.data.Basic
+        }
+    }) 
+    .then((res)=>{
+        sessionStorage.setItem('token', res.access_token)
+    })
+    .catch((err)=>{
+        window.console.log(err, 'APP端获取授权认证');
+    })
+})
+.catch((err)=>{
+    window.console.log(err, window.console.log("验真失败!"));
+})
+
+
+import requestObj from '@/assets/script/common.js';//通用请求
+Vue.prototype.$request = requestObj.request;
+
+import clipboard from 'clipboard';//复制
+Vue.prototype.clipboard = clipboard;
+
+router.afterEach(() => {
+    (document.documentElement.scrollTop = 0) && (document.body.scrollTop = 0);
+})
+
+// 引入全局组件
+import "@/assets/script/globalComponents.js"
+
+Vue.use(Vant);
+Vue.config.productionTip = false
+
+new Vue({
+    router,
+    store,
+    render: h => h(App),
+}).$mount('#app')
