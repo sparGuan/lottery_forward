@@ -17,7 +17,7 @@ const router = new Router({
             name: 'home',
             component: Home,
             meta: {
-                keepAlive: false,
+                keepAlive: true,
                 isBack: false,
             }
         },
@@ -27,7 +27,7 @@ const router = new Router({
             name: 'bankerList',
             component: BankerList,
             meta: {
-                keepAlive: false,
+                keepAlive: true,
                 isBack: false,
             }
         },
@@ -37,16 +37,17 @@ const router = new Router({
             name: 'makeRecord',
             component: MakeRecord,
             meta: {
-                keepAlive: false,
+                keepAlive: true,
                 isBack: false,
             }
         },
+        // 房间
         {
             path: '/bankerRoom',
             name: 'bankerRoom',
             component: BankerRoom,
             meta: {
-                keepAlive: false,
+                keepAlive: true,
                 isBack: false,
             }
         }

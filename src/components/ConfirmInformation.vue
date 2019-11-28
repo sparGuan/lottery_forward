@@ -6,7 +6,7 @@
             <div class="name flex flex_jc" v-if="confirmData.name"><span>{{ confirmData.name }}</span></div>
             <div class="informationList mt_16">
                 <div class="_row" v-for="(item, index) in confirmData.data" :key="index">
-                    <div class="_left"><span v-if="item.name">{{ item.name }}</span>{{ item.key }}</div>
+                    <div class="_left"><span v-if="item.name" :style="{background: bgcolor[item.bg] }">{{ item.name }}</span>{{ item.key }}</div>
                     <div class="_right">{{ item.value }}</div>
                 </div>
             </div>
@@ -24,7 +24,10 @@ export default {
     name: 'ConfirmInformation',
     data(){
         return {
-            
+            bgcolor: {
+                '1': "rgba(255,144,0,1);",
+                '2': "rgba(72,85,99,1)"
+            }
         }
     },
     props: ['confirmData'],
@@ -65,7 +68,6 @@ export default {
                     height: 22px;
                     text-align: center;
                     line-height: 22px;
-                    background:rgba(255,144,0,1);
                     border-radius: 11px;
                     font-size: 11px;
                     color:rgba(255,255,255,1);
@@ -74,7 +76,9 @@ export default {
             .informationList{
                 ._row{
                     ._left{
+                        color:rgba(41,50,60,.4);
                         span{
+                            margin-right: 8px;
                             width: 22px;
                             height: 14px;
                             background:rgba(255,144,0,1);
@@ -84,6 +88,9 @@ export default {
                             text-align: center;
                             line-height: 14px;
                         }
+                    }
+                    ._right{
+                        color:rgba(41,50,60,.8)
                     }
                 }
             }

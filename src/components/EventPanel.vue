@@ -16,12 +16,12 @@
                 <i v-if="info.bet_to == 1">平局</i>
                 <i v-if="info.bet_to == 2">{{ info.slave_count }}</i>
                 @{{ info.consult }}
-                <span>欧盘胜平负</span>
+                <span>胜平负</span>
             </div>
             <div class="list_content_left fs_16 fb" v-if="bettingAndBuilding == 'building'">
-                {{ info.name }} <span>欧盘胜平负</span>
+                {{ info.name }} <span>胜平负</span>
             </div>
-            <div v-show="bettingAndBuilding == 'building'" :class="info.result == null ? 'list_content_right fs_16 fb' : 'list_content_right fs_16 fb greenColor'">
+            <div v-show="bettingAndBuilding == 'building'" :class="info.result == null ? 'list_content_right fs_16 fb' : 'list_content_right fs_16 fb greenColor'" @click="jumpRoom">
                 {{ info.result == null ? '待开奖' : '已开奖' }}
                 <img v-if="info.result == null" src="@/assets/img/common/more.png" alt="">
             </div>
@@ -62,7 +62,7 @@
                     <span>{{ info.score.split(":")[0] }}</span> ：<span>{{ info.score.split(":")[1] }}</span>
                 </div>
             </div>
-            <div class="buttonBtn flex flex_aic fs_16 fb" v-show="bettingAndBuilding == 'betting'">
+            <div class="buttonBtn flex flex_aic fs_16 fb" v-show="bettingAndBuilding == 'betting'" @click="jumpRoom">
                 <span v-if="info.result == null">待开奖</span>
                 <span class="active" v-if="info.is_win == 1">已中奖</span>
                 <span v-if="info.result != null && info.is_win == 0">未中奖</span>
@@ -103,6 +103,18 @@ export default {
         }
     },
     methods: {
+        jumpRoom(){
+            if(this.info.result == null){
+                this.$router.push({
+                    name: 'bankerRoom',
+                    query: {
+                        games_point_id: this.info.games_point_id,
+                        games_room_id: this.info.games_room_id,
+                        isActive: 0,
+                    }
+                })
+            }
+        },
         receiveprize(data){
             this.$emit('receiveprize',data)
         },

@@ -5,17 +5,17 @@
                 <span class="title fs_18 fb color_ff">庄家列表</span>
             </div>
         </Gheader>
-        <TopWindow :record="record"></TopWindow>
-        <div class="Market flex flex_aisb flex_aic p0_16">
+        <TopWindow v-show="pageShow" :record="record"></TopWindow>
+        <div v-show="pageShow" class="Market flex flex_aisb flex_aic p0_16">
             <div class="MarketLeft flex1">
                 <p class="color_ff fs_16">市场庄家({{ totalRecord }})</p>
                 <span class="fs_12">参考赔率：主@{{ record.master_consult }}，平@{{ record.flat_consult }}，客@{{ record.slave_consult }}</span>
             </div>
             <div class="MarketRight">
-                <span class="color_ff fs_16" @click="bankerRoom">我来做庄</span>
+                <span class="color_ff fs_16" @click="bankerRoom" v-if="mankerBtnShow">我来做庄</span>
             </div>
         </div>
-        <div class="inputFill flex flex_aic flex_jc">
+        <div v-show="pageShow" class="inputFill flex flex_aic flex_jc">
             <input type="text" @focus="inputFocus" @blur="inputBlur" @input="inputData" v-model="inputValue">
             <div :class="seachMove ? 'search active flex flex_aic fs_14' : 'search flex flex_aic fs_14'">
                 <img class="flex_shk" src="@/assets/img/common/search.png" alt="">
@@ -56,18 +56,34 @@ export default {
             },
             record: {},
             bankerList:[],
-            totalRecord: 0
+            totalRecord: 0,
+            pageShow: false,
+            mankerBtnShow: false
         }
     },  
     created(){
-        this.getScrollData();
-        this.getMatchDetail();
-        this.getMyselfRoom();
+        this.isFirstEnter = true;
     },
-    mounted(){
-       
+    beforeRouteEnter (to, from, next) {
+        if(from.name == 'makeRecord' || from.name == 'bankerRoom'){
+            to.meta.isBack = true;
+        }
+        next();
+    },
+    activated() {
+        if(!this.$route.meta.isBack || this.isFirstEnter){
+            this.bankerList = [];
+            this.initData();
+        }
+        this.$route.meta.isBack = false;
+        this.isFirstEnter = false;
     },
     methods: {
+        initData(){
+            this.getScrollData();
+            this.getMatchDetail();
+            this.getMyselfRoom();
+        },
         back(){
             this.$router.go(-1)
         },
@@ -131,6 +147,7 @@ export default {
                     pageSize: 10
                 }
             }, res => {
+                this.mankerBtnShow = res.data.record.length > 0;
                 this.bankerList.unshift(res.data.record[0])
             })
         },
@@ -161,6 +178,7 @@ export default {
                     id: this.$route.query.id 
                 }
             }, res => {
+                this.pageShow = true;
                 console.log(res, "获取赛事详情")
                 this.record = res.data.record[0]
             })

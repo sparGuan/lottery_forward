@@ -21,7 +21,7 @@
                         </div>
                         <div class="probability fs_12 mt_2">参考赔率：主@{{ item.master_consult }}，平@{{ item.flat_consult }}，客@{{ item.slave_consult }}</div>
                     </div>
-                    <ul v-show="($route.query.isActive == 0) || ($route.query.isActive == 1)" class="wrapper flex">
+                    <ul v-show="$route.query.isActive != 2" class="wrapper flex">
                         <li class="win flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', 0, roomInfo.id)">
                             <p class="odds flex flex_aic fs_16 fb color_ff">
                                 {{ roomInfo.master_consult }}
@@ -74,9 +74,9 @@ export default {
     data(){
         return {
             matchTabbar: [
-                { name:'全部', num:3 }, 
-                { name:'全场', num:4 }, 
-                { name:'上半场', num:5 }
+                { name:'全部', num: 0 }, 
+                { name:'全场', num: 0 }, 
+                { name:'上半场', num: 0 }
             ],
             matchTabbarIndex: 0,
             activeNames: [0],
@@ -91,14 +91,33 @@ export default {
             interfaceSharing: null,
             interfaceParameters: {},
             confirmData: {},
-            bankerFlag: true
+            isFirstEnter: true,
+            bankerFlag: true,
+            timer: null
         }
     },
     created(){
-        this.getMatchDetail();
+        this.isFirstEnter = true;
+    },
+    beforeRouteEnter (to, from, next) {
+        if(from.name == 'makeRecord'){
+            to.meta.isBack = true;
+        }
+        next();
+    },
+    activated() {
+        if(!this.$route.meta.isBack || this.isFirstEnter){
+            this.getMatchDetail();
+        }
+        this.$route.meta.isBack = false;
+        this.isFirstEnter = false;
+    },
+    deactivated(){
+        window.clearInterval(this.timer)
     },
     methods: {
         back(){
+            window.clearInterval(this.timer)
             this.$router.go(-1);
         },
         history(){
@@ -122,7 +141,6 @@ export default {
             }, res => {
                 res.data.record[0].gamesPlay = JSON.parse(decodeURI(res.data.record[0].gamesPlay));
                 this.record = res.data.record[0];
-
                 if(this.$route.query.isActive != 2){
                     this.roomData()
                 }
@@ -137,7 +155,20 @@ export default {
                 }
             }, res => {
                 this.roomInfo = res.data.record[0];
+                this.intervalLoading();
             })
+        },
+        intervalLoading(){
+            this.timer = window.setInterval(()=>{
+                this.$request({
+                    ...Interface.banker_disc,
+                    data: {
+                        games_room_id: this.$route.query.games_room_id 
+                    }
+                }, res => {
+                    this.roomInfo = res.data.record[0];
+                })
+            },3000)
         },
         // 输入 数量组件
         inputEvent(flag, bet_to, banker_disc_id){
@@ -164,7 +195,6 @@ export default {
             this.confirmInformationFlag = false;
         },
         submitConfirmInformation(){
-            console.log(121212)
             //   玩家下单、庄下单
             if(this.BetType == 'bets'){
                 this.interfaceSharing = Interface.create_bets_order;

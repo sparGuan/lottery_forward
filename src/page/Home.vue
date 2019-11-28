@@ -92,11 +92,25 @@ export default {
             tournamentlevel: [],
             matchFilter: [],
             filterData: [],
-            time: ''
+            time: '',
+            isFirstEnter: false,
         }
     },
     created(){
-       this.initData();
+        this.isFirstEnter = true;
+    },
+    beforeRouteEnter (to, from, next) {
+        if(from.name == 'makeRecord' || from.name == 'bankerList'){
+            to.meta.isBack = true;
+        }
+        next();
+    },
+    activated() {
+        if(!this.$route.meta.isBack || this.isFirstEnter){
+            this.initData();
+        }
+        this.$route.meta.isBack = false;
+        this.isFirstEnter = false;
     },
     methods:{
         initData(){

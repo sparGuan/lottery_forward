@@ -60,7 +60,8 @@ export default {
             intermediateData: {},
             selectionInterface: null,
             receiveInterface: null,
-            receiveInterfaceParameter: {}
+            receiveInterfaceParameter: {},
+            isFirstEnter: true
         }
     },  
     computed: {
@@ -69,8 +70,21 @@ export default {
         })
     },
     created(){
+        this.isFirstEnter = true;
         this.selectionInterface = Interface.player_order_record;
-        this.getBetsData();
+    },
+    beforeRouteEnter (to, from, next) {
+        if(from.name == 'bankerRoom'){
+            to.meta.isBack = true;
+        }
+        next();
+    },
+    activated() {
+        if(!this.$route.meta.isBack || this.isFirstEnter){
+            this.getBetsData();
+        }
+        this.$route.meta.isBack = false;
+        this.isFirstEnter = false;
     },
     methods: {
         back(){
@@ -88,7 +102,6 @@ export default {
                 this.matchTabbar = ['全部', '待开奖', '已开奖', '未中奖'];
                 this.bettingAndBuilding = 'betting';
                 this.selectionInterface = Interface.player_order_record;
-
                 this.pageContent = {
                     page: 1,
                     pageSize: 20,
@@ -99,7 +112,6 @@ export default {
                 this.matchTabbar = ['全部', '待开奖', '已开奖'];
                 this.bettingAndBuilding = 'building';
                 this.selectionInterface = Interface.bankerOrderRecordBanker_order_record;
-
                 this.pageContent = {
                     page: 1,
                     pageSize: 20,
@@ -122,8 +134,7 @@ export default {
                         this.pageContent.is_win = '';
                         break;
                     case 1: 
-                        this.pageContent.status = 0;
-                        this.pageContent.is_win = 0;
+                        this.pageContent.status = this.pageContent.is_win = 0;
                         break;
                     case 2: 
                         this.pageContent.status = 2;
@@ -151,7 +162,6 @@ export default {
                         break;
                 }
             }
-            console.log(this.bettingAndBuilding)
         },
         receiveprize(data){
             this.intermediateData = data;
@@ -189,9 +199,9 @@ export default {
                     data: [
                         { key: '编号', value: data.created_by },
                         { key: '比分', value: data.score  },
-                        { key: data.bet_to_master_amount+'@'+data.master_consult+"x", value: data.result == 0 ? '-' +(data.bet_to_master_amount*data.master_consult) + ' ANT' : '- -', name: '主胜'  },
-                        { key: data.bet_to_flag_amount+'@'+data.flat_consult+"x", value: data.result == 1 ? '-' +(data.bet_to_flag_amount*data.flat_consult) + ' ANT' : '- -', name: '平仓'  },
-                        { key: data.bet_to_slave_amount+'@'+data.slave_consult+"x", value: data.result == 2 ? '-' +(data.bet_to_slave_amount*data.slave_consult) + ' ANT' : '- -', name: '客胜'  },
+                        { key: data.bet_to_master_amount+'@'+data.master_consult+"x", value: data.result == 0 ? '-' +(data.bet_to_master_amount*data.master_consult) + ' ANT' : '- -', name: '主胜', bg: '1'  },
+                        { key: data.bet_to_flag_amount+'@'+data.flat_consult+"x", value: data.result == 1 ? '-' +(data.bet_to_flag_amount*data.flat_consult) + ' ANT' : '- -', name: '平仓', bg: '2'  },
+                        { key: data.bet_to_slave_amount+'@'+data.slave_consult+"x", value: data.result == 2 ? '-' +(data.bet_to_slave_amount*data.slave_consult) + ' ANT' : '- -', name: '客胜', bg: '2'  },
                         { key: '庄盘总资金', value: data.pool_amount + ' ANT'  },
                         { key: '手续费('+ data.commission +'%)', value: '-' + (data.commission/100 * data.pool_amount) + " ANT" },
                         { key: '提现金额', value: data.pool_amount - (data.commission/100 * data.pool_amount) - this.deduction(data) + ' ANT'},
@@ -212,11 +222,11 @@ export default {
         deduction(data){
             var sum = 0;
             if(data.result == 0){
-                sum = data.bet_to_master_amount*data.master_consult
+                sum = data.bet_to_master_amount * data.master_consult
             }else if(data.result == 1){
-                sum = data.bet_to_flag_amount*data.flat_consult
+                sum = data.bet_to_flag_amount * data.flat_consult
             }else if(data.result == 2){
-                sum = data.bet_to_slave_amount*data.slave_consult
+                sum = data.bet_to_slave_amount * data.slave_consult
             }
             return sum
         },
@@ -242,7 +252,6 @@ export default {
             }, res => {
                 this.confirmInformationFlag = false;
                 this.intermediateData.is_receive = 1;
-                console.log(res, "玩家领取接口成功")
             },err => {
                console.log(err, "玩家领取接口失败")
             })
@@ -258,6 +267,7 @@ export default {
                 this.finished = res.data.record.length < this.pageContent.pageSize;
                 this.eventPanelData = this.eventPanelData.concat(res.data.record);
             },err => {
+                this.pageContent.page = 1;
                 this.loading = false;
                 this.error = true;
             })
