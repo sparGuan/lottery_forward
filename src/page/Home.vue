@@ -28,15 +28,15 @@
                 </ul>
             </div>
         </transition>
-        <div class="matchList" >
-            <van-collapse v-model="activeNames" @change="matchListChange">
+        <div class="matchList" v-if="matchFilter.length > 0">
+            <van-collapse v-model="activeNames" @change="matchListChange" >
                 <van-collapse-item :name="index" class="mb_6" v-for="(item, key, index) in filterData" :key="index">
                     <div slot="title" class="title flex flex_aic"><img class="collapseImg" :src="item[0].games_img_url" alt="">{{ item[0].games_name }} ({{ item.length }})</div>
                     <div class="showBox flex mb_5" v-for="(dom, ind) in item" :key="ind" @click="matchItem(dom)">  
                         <div class="fir-item">
                             <div class="time-and-amount">
                                 <div class="time">{{ dom.master_start_time }}</div>
-                                <div class="amount">5+</div>
+                                <div class="amount">{{ dom.room_nums }}</div>
                             </div>
                             <div>
                                 <span class="type-word">主</span>
@@ -241,16 +241,16 @@ export default {
         },
         // 筛选ID分类数据
         contestSelection(){
-            var arr = {};
-            var allId = this.matchFilter.map((item, index)=>{
+            let arr = {};
+            let allId = this.matchFilter.map((item, index)=>{
                 return item.games_id
             })
-            var filterId = this.unique(allId);
-            for(var i=0; i<filterId.length; i++){
-                if(this.matchFilter[i].games_id == filterId[i]){
-                    arr[filterId[i]] = []
-                    arr[filterId[i]].push(this.matchFilter[i])
-                }
+            let filterId = this.unique(allId);
+            for(let j=0; j<filterId.length; j++){
+                arr[filterId[j]] = []
+            }
+            for(let i=0; i<this.matchFilter.length; i++){
+                arr[this.matchFilter[i].games_id].push(this.matchFilter[i])
             }
             return arr
         },

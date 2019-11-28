@@ -32,7 +32,6 @@ axios.interceptors.request.use(
 // 拦截响应
 axios.interceptors.response.use(
     response => {
-        // return response.data;
         let res = response.data;
         res.message = res.msg || res.message;
         let status = Number(res.code);
@@ -41,16 +40,6 @@ axios.interceptors.response.use(
                 return res;  
             case 1: //错误
                 return Promise.reject(res);
-            case 40001: //未登录
-                return Promise.reject({
-                    code: 40001,
-                    msg: '登录信息出错'
-                });
-            case 40002: //未登录
-                return Promise.reject({
-                    code: 40002,
-                    msg: '登录信息失效'
-                });
             default:
                 return res;
         }

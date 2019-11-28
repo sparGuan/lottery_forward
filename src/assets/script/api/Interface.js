@@ -25,7 +25,6 @@
  * 
  */
 
-// /api/bankerOrderRecord/banker_order_record
 import ip from './ip.js'
 
 export const Interface = {

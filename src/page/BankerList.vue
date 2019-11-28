@@ -147,7 +147,7 @@ export default {
                     pageSize: 10
                 }
             }, res => {
-                this.mankerBtnShow = res.data.record.length > 0;
+                this.mankerBtnShow = res.data.record.length == 0;
                 this.bankerList.unshift(res.data.record[0])
             })
         },

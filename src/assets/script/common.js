@@ -7,8 +7,7 @@ import Vue from "vue";
 import qs from 'querystring'
 
 // 通用请求
-const request = (params, callback, error, toast) => {
-    // const bus = Vue.prototype.$eventBus;
+const request = (params, callback, error) => {
     let tokenVal = sessionStorage.getItem("token");
     var headers = {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -31,18 +30,12 @@ const request = (params, callback, error, toast) => {
     axios(obj)
         .then(res => {
             callback && callback(res);
-            // if (toast == 1) {
-            //     Vue.prototype.JT_toast(bus.$t(res.msg));
-            // } else if (toast == 2) {
-            //     Vue.prototype.JM_toast(bus.$t(res.msg), 1);
-            // }
         })
         .catch(err => {
             error && error(err)
             window.console.warn(err);
-            // if (toast === 4) return
-            // const msg = err.msg || err
-            // Vue.prototype.JT_toast(bus.$t(msg));
+            const msg = err.message
+            Vue.prototype.JT_toast(msg);
         });
 };
 export default { request };

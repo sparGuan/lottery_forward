@@ -2,7 +2,7 @@
     <div class="inputBetting">
         <div class="container">
             <img class="dropdown" @click="back" src="@/assets/img/common/dropdown.png" alt="">
-            <p class="titleName fb fs_20 flex flex_aic mt_14">{{ typeData[parameter.type].title }}<span>欧盘胜平负</span></p>
+            <p class="titleName fb fs_20 flex flex_aic mt_14">{{ typeData[parameter.type].title }}<span>{{ typeData[parameter.type].player }}</span></p>
             <p class="oddrDesc fs_14 mt_10" v-for="(item, index) in typeData[parameter.type].descList" :key="index">{{ item.desc }}</p>
             <ul v-if="parameter.type == 'banker'" class="inputGroup flex flex_jcbt mt_16 mb_16">
                 <div class="item flex flex_jcbt flex_aic">
@@ -30,7 +30,7 @@
                     <CursorWrap ref="inputNum" placeholder="请输入备用金" :inputNumber="inputNumValue" class="textLeft" :left="true" />
                     <span class="fs_16">ATN</span>
                 </div>
-                <div class="submitBtn color_ff fs_16 fb" @click="sureSubmit(parameter.type)">确认</div>
+                <div class="submitBtn color_ff fs_16 fb" @click="sureSubmit(parameter.type)">确认{{ ANTNumber }}</div>
             </ul>
             <p class="tips" v-show="tipsFlag">{{ tipsText }}</p>
             <div class="vanNumberKeyboard">
@@ -64,12 +64,13 @@ export default {
                 'bets': {
                     title: '你好我好国家队',
                     descList: [
-                        { desc: '你好我好国家队@2.19' },
+                        { desc: '你好我好VS好好学习' },
                         { desc: '最大可投注：1000' }
                     ]
                 },
                 'banker': {
                     title: '你好我好VS好好学习',
+                    player: '欧盘胜平负',
                     descList: [
                         { desc: '参考赔率：主@1.62，平@1.4，客@1.53' }
                     ]
@@ -78,12 +79,33 @@ export default {
         }
     },
     mounted(){
-        console.log(this.parameter.type)
+        console.log(this.parameter)
+        this.initialization();
     },
-    props: ['parameter'],
+    props: ['parameter','ANTNumber'],
     methods: {
         back(){
             this.$emit("closeInputBetting");
+        },
+        initialization(){
+            var { master_consult, flat_consult, slave_consult, name } = this.parameter.information.gamesPlay[this.parameter.playerIndex];
+            this.typeData[this.parameter.type].player = name;
+
+            if(this.parameter.type == 'banker'){
+                this.typeData[this.parameter.type].title = this.parameter.information.master_count + "vs" + this.parameter.information.slave_count;
+                this.typeData[this.parameter.type].descList[0].desc = `参考赔率：主@${master_consult}，平@${flat_consult}，客@${slave_consult}`;
+            }else if(this.parameter.type == 'bets'){
+                var { bet_to } = this.parameter;
+                if(bet_to == 0){
+                    this.typeData[this.parameter.type].title = this.parameter.information.master_count;
+                }else if(bet_to == 1){
+                    this.typeData[this.parameter.type].title = "平局@" + flat_consult;
+                }else{
+                    this.typeData[this.parameter.type].title = this.parameter.information.slave_count;
+                }
+                this.typeData[this.parameter.type].descList[0].desc = this.parameter.information.master_count + "vs" + this.parameter.information.slave_count;
+                // this.typeData[this.parameter.type].descList[1].desc = "最大可投注：" + this.ANTNumber;
+            }
         },
         closeCursor(type){
             this.inputType = type;
@@ -159,7 +181,6 @@ export default {
             }
         },
         sureSubmit(flag){
-            console.log(flag)
             this.$refs.win && this.$refs.win.clearTimer();
             this.$refs.flat && this.$refs.flat.clearTimer();
             this.$refs.negative && this.$refs.negative.clearTimer();

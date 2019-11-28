@@ -1,5 +1,5 @@
 <template>
-    <div class="marketItem flex flex_aic flex_jcbt">
+    <div class="marketItem flex flex_aic flex_jcbt" v-if="info">
         <div class="flex flex_aic flex1">
             <div class="FootListLeft">
                 <span class="color_ff fs_16 fb text_center">庄</span>

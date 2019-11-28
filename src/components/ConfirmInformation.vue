@@ -31,6 +31,9 @@ export default {
         }
     },
     props: ['confirmData'],
+    mounted(){
+        console.log(this.confirmData)
+    },
     methods: {
         close(){
             this.$emit("closeConfirmInformation")
@@ -66,6 +69,7 @@ export default {
                 span{
                     padding: 0 8px;
                     height: 22px;
+                    background:rgba(255,144,0,1);
                     text-align: center;
                     line-height: 22px;
                     border-radius: 11px;

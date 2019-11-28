@@ -22,29 +22,29 @@
                         <div class="probability fs_12 mt_2">参考赔率：主@{{ item.master_consult }}，平@{{ item.flat_consult }}，客@{{ item.slave_consult }}</div>
                     </div>
                     <ul v-show="$route.query.isActive != 2" class="wrapper flex">
-                        <li class="win flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', 0, roomInfo.id)">
+                        <li class="win flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', index, 0, roomInfo.id)">
                             <p class="odds flex flex_aic fs_16 fb color_ff">
                                 {{ roomInfo.master_consult }}
                                 <span>主胜</span>
                             </p>
-                            <p class="mayCast mt_16 fs_14">{{ roomInfo.master_bet_amount }} ANT</p>
+                            <p class="mayCast mt_16 fs_14">{{ parseFloat(roomInfo.master_bet_amount).toFixed(2) }} ANT</p>
                         </li>
-                        <li class="flat flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', 1, roomInfo.id)">
+                        <li class="flat flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', index, 1, roomInfo.id)">
                             <p class="odds flex flex_aic fs_16 fb">
                                 {{ roomInfo.flat_consult }}
                                 <span>平局</span>
                             </p>
-                            <p class="mayCast mt_16 fs_14">{{ roomInfo.flat_bet_amount }} ANT</p>
+                            <p class="mayCast mt_16 fs_14">{{ parseFloat(roomInfo.flat_bet_amount).toFixed(2) }} ANT</p>
                         </li>
-                        <li class="negative flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', 2, roomInfo.id)">
+                        <li class="negative flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', index, 2, roomInfo.id)">
                             <p class="odds flex flex_aic fs_16 fb color_ff">
                                 {{ roomInfo.slave_consult }}
                                 <span>客胜</span>
                             </p>
-                            <p class="mayCast mt_16 fs_14">{{ roomInfo.slave_bet_amount }} ANT</p>
+                            <p class="mayCast mt_16 fs_14">{{ parseFloat(roomInfo.slave_bet_amount).toFixed(2) }} ANT</p>
                         </li>
                     </ul>
-                    <div class="bankerBtn color_ff" @click="inputEvent('banker')" v-show="($route.query.isActive == 2) && bankerFlag" >我来做庄</div>
+                    <div class="bankerBtn color_ff" @click="inputEvent('banker',index)" v-show="($route.query.isActive == 2) && bankerFlag" >我来做庄</div>
                 </van-collapse-item>
             </van-collapse>
         </div>
@@ -58,7 +58,7 @@
         />
         <div @touchmove.prevent>
             <transition name="input">
-                <InputBetting v-if="inputBettingFlag" @confirmation="confirmation"  @closeInputBetting="closeInputBetting" :parameter="parameter"></InputBetting>
+                <InputBetting v-if="inputBettingFlag" @confirmation="confirmation"  @closeInputBetting="closeInputBetting" :parameter="parameter" :ANTNumber="ANTNumber"></InputBetting>
             </transition>
         </div>
         <div @touchmove.prevent>
@@ -69,6 +69,7 @@
 
 <script>
 import { Interface } from '@/assets/script/api/Interface.js'
+import { setInterval } from 'timers';
 export default {
     name: 'bankerRoom',
     data(){
@@ -93,11 +94,16 @@ export default {
             confirmData: {},
             isFirstEnter: true,
             bankerFlag: true,
-            timer: null
+            timer: null,
+            toast: null,
+            ANTNumber: 0
         }
     },
     created(){
         this.isFirstEnter = true;
+        setInterval(()=>{
+            this.ANTNumber = this.ANTNumber + 1
+        },1000)
     },
     beforeRouteEnter (to, from, next) {
         if(from.name == 'makeRecord'){
@@ -142,20 +148,25 @@ export default {
                 res.data.record[0].gamesPlay = JSON.parse(decodeURI(res.data.record[0].gamesPlay));
                 this.record = res.data.record[0];
                 if(this.$route.query.isActive != 2){
-                    this.roomData()
+                    this.roomData(this.$route.query.games_room_id)
                 }
             })
         },
         // 获取房间数据
-        roomData(){
+        roomData(games_room_id){
             this.$request({
                 ...Interface.banker_disc,
                 data: {
-                    games_room_id: this.$route.query.games_room_id 
+                    games_room_id: games_room_id
                 }
             }, res => {
+                this.toast != null && this.toast.clear();
+
                 this.roomInfo = res.data.record[0];
-                this.intervalLoading();
+                if(this.$route.query.isActive != 0){
+                    this.intervalLoading();
+                }
+                
             })
         },
         intervalLoading(){
@@ -166,21 +177,26 @@ export default {
                         games_room_id: this.$route.query.games_room_id 
                     }
                 }, res => {
+                    console.log(res, '数据加载')
                     this.roomInfo = res.data.record[0];
                 })
             },3000)
         },
         // 输入 数量组件
-        inputEvent(flag, bet_to, banker_disc_id){
+        inputEvent(flag, playerIndex, bet_to, banker_disc_id){
             if(flag == 'bets'){
                 this.parameter = {
                     type: 'bets',
                     bet_to,
-                    banker_disc_id
+                    playerIndex,
+                    banker_disc_id,
+                    information: this.record,
                 }
             }else if(flag == 'banker'){
                 this.parameter = {
-                    type: 'banker'
+                    type: 'banker',
+                    playerIndex: playerIndex,
+                    information: this.record
                 }
             }
             if(this.$route.query.isActive != 0){
@@ -222,10 +238,33 @@ export default {
                 this.closeConfirmInformation();
                 this.closeInputBetting();
                 this.bankerFlag = false;
-                // this.roomData();
+                this.toast = this.$toast.loading({
+                    duration: 0, 
+                    forbidClick: true,
+                    message: '加载中。。。'
+                });
+                this.updataRoom();
                 console.log(res, "庄下单成功")
             },err => {
                 console.log(err, "庄下单失败")
+            })
+        },
+        // 庄下单更新房间数据
+        updataRoom(){
+            this.$request({
+                ...Interface.roomgames_roomsearch,
+                data: {
+                    games_point_id: this.$route.query.games_point_id,
+                    page: 1,
+                    pageSize: 10
+                }
+            }, res => {
+                if(res.data.record.length > 0){
+                    this.toast.clear();
+                    this.roomData(res.data.record[0].id)
+                }else{
+                    this.updataRoom()
+                }
             })
         },
         // 确认输入数量成功回调
