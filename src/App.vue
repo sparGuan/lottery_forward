@@ -14,16 +14,18 @@ export default {
 </script>       
 
 <style lang="less">
-
     body{
         height: 100%; 
-        background: rgba(41, 50, 60, 1);
+        background-color: #1a242e;
+        .van-toast.van-toast--middle{
+            z-index: 12 !important;
+        }
     }
     #app{
         width: 100%;
-        background: rgba(41, 50, 60, 1);
+        background-color: #1a242e;
         color: #fff;
-        font-family: 'PingFangSC-Regular', 'PingFang SC',  'Microsoft Yahei', '微软雅黑', Arial, sans-serif;
+        font-family: 'PingFangSC-Regular', 'PingFang SC',  'Microsoft Yahei', '微软雅黑', Arial, sans-serif !important;
         .van-cell{
             background:linear-gradient(90deg,rgba(41,50,60,1) 0%,rgba(72,85,99,1) 100%);
         }
@@ -47,6 +49,11 @@ export default {
                 margin-top: 8px;
                 font-size: 20px;
                 color: rgba(255,255,255,0.8);
+            }
+        }
+        .matchList{
+            .van-cell__right-icon{
+                margin-top: 2px;
             }
         }
         

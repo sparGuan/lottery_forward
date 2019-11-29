@@ -3,19 +3,19 @@
         <div class="TopWindow">
             <div class="matchTitle flex flex_aic flex_jcbt">
                 <div class="title flex flex_aic color_ff">
-                    <img :src="record.logo" alt="">
+                    <img :src="record.logo | imgurl" alt="">
                     {{ record.gameName }}
                 </div>
                 <div class="time color_ff">{{ record.master_start_time }}</div>
             </div>
             <div class="opponent flex flex_aic fs_16 color_ff">
                 <div class="team1 flex1 flex flex_fdc flex_jc flex_aic ml_15">
-                    <img :src="record.master_img_url" alt="">
+                    <img :src="record.master_img_url | imgurl" alt="">
                     {{ record.master_count }}
                 </div>
                 <img class="flex_shk mb_10" src="@/assets/img/common/vs2.png" alt="">
                 <div class="team2 flex1 flex flex_fdc flex_jc flex_aic mr_15">
-                    <img :src="record.slave_img_url" alt="">
+                    <img :src="record.slave_img_url | imgurl" alt="">
                     {{ record.slave_count }}
                 </div>
             </div>

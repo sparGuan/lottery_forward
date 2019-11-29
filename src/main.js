@@ -12,7 +12,7 @@ import axios from "@/assets/script/axios-config.js"; //请求拦截
 Vue.prototype.$axios = axios;
 
 // flag = true 庄家， false 玩家
-var flag = false,
+var flag = true,
     parameter = {}
 if(flag){
     parameter = {
@@ -61,6 +61,11 @@ Vue.prototype.$axios({
     window.console.log(err, window.console.log("验真失败!"));
 })
 
+// 图片地址拼接
+import ip from '@/assets/script/api/ip.js'
+Vue.filter('imgurl',(val)=>{
+    return ip + '/public/uploads/' + val;
+})
 
 import requestObj from '@/assets/script/common.js';//通用请求
 Vue.prototype.$request = requestObj.request;

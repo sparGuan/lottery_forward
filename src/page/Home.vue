@@ -9,7 +9,7 @@
         <div class="swipe_lunbo w100">
             <van-swipe ref="lunbo" :loop="false" @change="onChange" :show-indicators="true" indicator-color="white">
                 <van-swipe-item v-for="(item, index) in bannerList" :key="index" @click="bannergopage(item)">
-                    <div><img :src="item.img_url" alt=""></div>
+                    <div><img :src="item.img_url | imgurl" alt=""></div>
                 </van-swipe-item>
             </van-swipe>
         </div>
@@ -31,7 +31,7 @@
         <div class="matchList" v-if="matchFilter.length > 0">
             <van-collapse v-model="activeNames" @change="matchListChange" >
                 <van-collapse-item :name="index" class="mb_6" v-for="(item, key, index) in filterData" :key="index">
-                    <div slot="title" class="title flex flex_aic"><img class="collapseImg" :src="item[0].games_img_url" alt="">{{ item[0].games_name }} ({{ item.length }})</div>
+                    <div slot="title" class="title flex flex_aic"><img class="collapseImg" :src="item[0].games_img_url | imgurl" alt="">{{ item[0].games_name }} ({{ item.length }})</div>
                     <div class="showBox flex mb_5" v-for="(dom, ind) in item" :key="ind" @click="matchItem(dom)">  
                         <div class="fir-item">
                             <div class="time-and-amount">
@@ -286,6 +286,7 @@ export default {
     .wrapper{
         .center{
             img{
+                border-radius: 50%;
                 width: 24px;
                 height: 24px;
             }
@@ -350,6 +351,7 @@ export default {
                     border: 1px solid rgba(98, 105, 112, 1);
                     transition: all ease 0.5s;
                     &.activeDate{
+                        border: 1px solid rgba(35,215,235,1);
                         background: linear-gradient(180deg,rgba(35,215,235,1) 0%,rgba(6,174,208,1) 100%);
                         color: #fff;
                     }

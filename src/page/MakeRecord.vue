@@ -15,14 +15,14 @@
             </li>
         </ul>
         <div class="list_wrap">
-             <van-list
+            <van-list
+                v-if="vanlist"
                 v-model="loading"
                 :error.sync="error"
                 error-text="请求失败，点击重新加载"
                 @load="onLoad"
                 finished-text="没有更多了"
                 :finished="finished"
-                :immediate-check="false"
             >
                 <EventPanel :bettingAndBuilding="bettingAndBuilding" :info="item" @receiveprize="receiveprize" v-for="(item, index) in eventPanelData" :key="index"/>
              </van-list>
@@ -61,7 +61,8 @@ export default {
             selectionInterface: null,
             receiveInterface: null,
             receiveInterfaceParameter: {},
-            isFirstEnter: true
+            isFirstEnter: true,
+            vanlist: true
         }
     },  
     computed: {
@@ -81,7 +82,7 @@ export default {
     },
     activated() {
         if(!this.$route.meta.isBack || this.isFirstEnter){
-            this.getBetsData();
+            // this.getBetsData();
         }
         this.$route.meta.isBack = false;
         this.isFirstEnter = false;
@@ -94,12 +95,13 @@ export default {
             this.getBetsData();
         },
         selectTab(index){
+            this.vanlist = false
             this.headerIndex = index;
             this.matchTabbarIndex = 0;
             this.eventPanelData = [];
             this.loading = this.finished = false;
             if(index == 1){
-                this.matchTabbar = ['全部', '待开奖', '已开奖', '未中奖'];
+                this.matchTabbar = ['全部', '待开奖', '已中奖', '未中奖'];
                 this.bettingAndBuilding = 'betting';
                 this.selectionInterface = Interface.player_order_record;
                 this.pageContent = {
@@ -118,8 +120,12 @@ export default {
                     status: 0,
                 }
             }
+            this.$nextTick(()=>{
+                this.vanlist = true;
+            })
         },
         selectTabbar(data, index){
+            this.vanlist = false
             this.matchTabbarIndex = index;
             this.eventPanelData = [];
             this.loading = this.finished = false;
@@ -162,6 +168,9 @@ export default {
                         break;
                 }
             }
+            this.$nextTick(()=>{
+                this.vanlist = true;
+            })
         },
         receiveprize(data){
             this.intermediateData = data;
@@ -275,7 +284,7 @@ export default {
         // 时间格式转换
         transformTime(timestamp = +new Date()) {
             if (timestamp) {
-                var time = new Date(parseInt(timestamp));
+                var time = new Date(parseInt(timestamp)*1000);
                 var y = time.getFullYear(); 
                 var M = time.getMonth() + 1;
                 var d = time.getDate(); 

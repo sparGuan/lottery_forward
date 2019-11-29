@@ -22,7 +22,6 @@ axios.interceptors.request.use(
         if (config.method === "get") {
             config.params = config.data;
         }
-    
         return config;
     },
     err => {

@@ -17,11 +17,11 @@
                     <div slot="title" class="title">
                         <div class="tradingRules flex flex_aic">
                             <span class="name fs_16">{{ item.name }}</span>
-                            <span class="number ml_8">{{ $route.query.isActive == 2 ? 0 : roomInfo.people }}</span>
+                            <span class="number ml_8">{{ $route.query.isActive == 2 ? 0 : (roomInfo.people != null ? roomInfo.people : 0) }}</span>
                         </div>
                         <div class="probability fs_12 mt_2">参考赔率：主@{{ item.master_consult }}，平@{{ item.flat_consult }}，客@{{ item.slave_consult }}</div>
                     </div>
-                    <ul v-show="$route.query.isActive != 2" class="wrapper flex">
+                    <ul v-show="$route.query.isActive != 2 || showUpdataPage" class="wrapper flex">
                         <li class="win flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', index, 0, roomInfo.id)">
                             <p class="odds flex flex_aic fs_16 fb color_ff">
                                 {{ roomInfo.master_consult }}
@@ -96,14 +96,12 @@ export default {
             bankerFlag: true,
             timer: null,
             toast: null,
-            ANTNumber: 0
+            ANTNumber: 0,
+            showUpdataPage: false
         }
     },
     created(){
         this.isFirstEnter = true;
-        setInterval(()=>{
-            this.ANTNumber = this.ANTNumber + 1
-        },1000)
     },
     beforeRouteEnter (to, from, next) {
         if(from.name == 'makeRecord'){
@@ -113,6 +111,7 @@ export default {
     },
     activated() {
         if(!this.$route.meta.isBack || this.isFirstEnter){
+            this.showUpdataPage = false;
             this.getMatchDetail();
         }
         this.$route.meta.isBack = false;
@@ -161,14 +160,14 @@ export default {
                 }
             }, res => {
                 this.toast != null && this.toast.clear();
-
+                this.showUpdataPage = true;
                 this.roomInfo = res.data.record[0];
-                if(this.$route.query.isActive != 0){
+                if(this.$route.query.isActive == 1){
                     this.intervalLoading();
-                }
-                
+                }  
             })
         },
+        // 实时请求房间数据
         intervalLoading(){
             this.timer = window.setInterval(()=>{
                 this.$request({
@@ -177,10 +176,18 @@ export default {
                         games_room_id: this.$route.query.games_room_id 
                     }
                 }, res => {
-                    console.log(res, '数据加载')
+                    if(this.parameter.bet_to == 0){
+                        this.ANTNumber = res.data.record[0].master_bet_amount
+                    }else if(this.parameter.bet_to == 1){
+                        this.ANTNumber = res.data.record[0].flat_bet_amount
+                    }else if(this.parameter.bet_to == 2){
+                        this.ANTNumber = res.data.record[0].slave_bet_amount
+                    }else{
+                        this.ANTNumber = 0
+                    }
                     this.roomInfo = res.data.record[0];
                 })
-            },3000)
+            },1000)
         },
         // 输入 数量组件
         inputEvent(flag, playerIndex, bet_to, banker_disc_id){
@@ -191,6 +198,7 @@ export default {
                     playerIndex,
                     banker_disc_id,
                     information: this.record,
+                    roomInfo: this.roomInfo
                 }
             }else if(flag == 'banker'){
                 this.parameter = {
@@ -241,10 +249,9 @@ export default {
                 this.toast = this.$toast.loading({
                     duration: 0, 
                     forbidClick: true,
-                    message: '加载中。。。'
+                    message: '加载中...'
                 });
                 this.updataRoom();
-                console.log(res, "庄下单成功")
             },err => {
                 console.log(err, "庄下单失败")
             })
@@ -261,7 +268,8 @@ export default {
             }, res => {
                 if(res.data.record.length > 0){
                     this.toast.clear();
-                    this.roomData(res.data.record[0].id)
+                    var id = res.data.record.length > 0  ? res.data.record[0].id : 0;
+                    this.roomData(id)
                 }else{
                     this.updataRoom()
                 }
@@ -269,9 +277,24 @@ export default {
         },
         // 确认输入数量成功回调
         confirmation(flag, obj){
-            console.log(flag, obj)
+            this.BetType = flag;
+            this.BetTypeData = obj;
             if(flag == 'bets'){
-
+                this.toast = this.$toast.loading({duration: 0, forbidClick: true, message: '加载中。。。'});
+                this.$request({
+                    ...Interface.create_bets_order,
+                    data: {
+                        rule: 0,
+                        banker_disc_id: this.parameter.banker_disc_id,
+                        amount: this.BetTypeData.inputNum,
+                        bet_to: this.parameter.bet_to
+                    }
+                }, res => {
+                    this.toast.clear();
+                    this.closeInputBetting();
+                },err => {
+                    console.log(err, "玩家下单失败")
+                })
             }else if(flag == 'banker'){
                 this.confirmData = {
                     btnFlag: 0,
@@ -285,10 +308,10 @@ export default {
                         { key: '备用金', value: obj.inputNum + " ANT" }
                     ]
                 }
+                this.confirmInformationFlag = true;
             }
-            this.BetType = flag;
-            this.BetTypeData = obj;
-            this.confirmInformationFlag = true;
+            
+            
         }
     }
 }

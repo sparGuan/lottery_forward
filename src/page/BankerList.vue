@@ -73,6 +73,7 @@ export default {
     activated() {
         if(!this.$route.meta.isBack || this.isFirstEnter){
             this.bankerList = [];
+            this.pageContent.page = 1;
             this.initData();
         }
         this.$route.meta.isBack = false;
@@ -163,7 +164,6 @@ export default {
                 this.loading = false;
                 this.finished = res.data.record.length < this.pageContent.pageSize;
                 this.bankerList = this.bankerList.concat(res.data.record);
-                
             },err => {
                 this.pageContent.page = 1;
                 this.loading = false;

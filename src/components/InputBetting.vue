@@ -24,13 +24,14 @@
                     </div>
                 </div>
             </ul>
-            <p class="oddrDesc fs_14 mt_24" v-if="parameter.type == 'bets'">预计收入：<span>0 ANT</span></p>
+            <p class="oddrDesc fs_14 mt_10" v-if="parameter.type == 'bets'">最大可投注：{{ ANTNumber }}</p>
+            <p class="oddrDesc fs_14 mt_24" v-if="parameter.type == 'bets'">预计收入：<span>{{ harvest }} ANT</span></p>
             <ul class="inputGroupNumber flex flex_jcbt mt_10 mb_10">
                 <div class="inputNum flex flex_aic" @click="closeCursor('inputNum')">
                     <CursorWrap ref="inputNum" placeholder="请输入备用金" :inputNumber="inputNumValue" class="textLeft" :left="true" />
                     <span class="fs_16">ATN</span>
                 </div>
-                <div class="submitBtn color_ff fs_16 fb" @click="sureSubmit(parameter.type)">确认{{ ANTNumber }}</div>
+                <div class="submitBtn color_ff fs_16 fb" @click="sureSubmit(parameter.type)">确认</div>
             </ul>
             <p class="tips" v-show="tipsFlag">{{ tipsText }}</p>
             <div class="vanNumberKeyboard">
@@ -59,13 +60,14 @@ export default {
             negativeValue: '',
             inputNumValue: '',
             tipsFlag: false,
+            harvest: 0,
+            odds: 1,
             tipsText: '您输入的赔率范围应为1~1000',
             typeData: {
                 'bets': {
                     title: '你好我好国家队',
                     descList: [
-                        { desc: '你好我好VS好好学习' },
-                        { desc: '最大可投注：1000' }
+                        { desc: '你好我好VS好好学习' }
                     ]
                 },
                 'banker': {
@@ -97,14 +99,16 @@ export default {
             }else if(this.parameter.type == 'bets'){
                 var { bet_to } = this.parameter;
                 if(bet_to == 0){
-                    this.typeData[this.parameter.type].title = this.parameter.information.master_count;
+                    this.odds = this.parameter.roomInfo.master_consult
+                    this.typeData[this.parameter.type].title = this.parameter.information.master_count + "@" + this.odds;
                 }else if(bet_to == 1){
-                    this.typeData[this.parameter.type].title = "平局@" + flat_consult;
-                }else{
-                    this.typeData[this.parameter.type].title = this.parameter.information.slave_count;
+                    this.odds = this.parameter.roomInfo.master_consult
+                    this.typeData[this.parameter.type].title = "平局@" + this.odds;
+                }else if(bet_to == 2){
+                    this.odds = this.parameter.roomInfo.slave_consult
+                    this.typeData[this.parameter.type].title = this.parameter.information.slave_count + "@" + this.odds;
                 }
                 this.typeData[this.parameter.type].descList[0].desc = this.parameter.information.master_count + "vs" + this.parameter.information.slave_count;
-                // this.typeData[this.parameter.type].descList[1].desc = "最大可投注：" + this.ANTNumber;
             }
         },
         closeCursor(type){
@@ -146,7 +150,8 @@ export default {
                     this.negativeValue = this.negativeValue + data
                     break;
                 case 'inputNum':
-                    this.inputNumValue = this.inputNumValue + data
+                    this.inputNumValue = this.inputNumValue + data;
+                    this.harvest = this.inputNumValue * this.odds;
                     break;
                 default:
                     break;
@@ -185,20 +190,27 @@ export default {
             this.$refs.flat && this.$refs.flat.clearTimer();
             this.$refs.negative && this.$refs.negative.clearTimer();
             this.$refs.inputNum && this.$refs.inputNum.clearTimer();
-            if(flag == 'banker', parseFloat(this.winValue)){
-                if(parseFloat(this.winValue) < 1 || parseFloat(this.winValue) > 1000){  
+            if(flag == 'banker'){
+                if( (parseFloat(this.winValue) < 1 || parseFloat(this.winValue) > 1000) || this.winValue == ''){  
                     this.tipsFlag = true;
                     this.tipsText = '您输入的赔率范围应为1~1000之间'
                     return false
                 }
-                if(parseFloat(this.flatValue) < 1 || parseFloat(this.flatValue) > 1000){
+                if( (parseFloat(this.flatValue) < 1 || parseFloat(this.flatValue) > 1000)  || this.flatValue == ''){
                     this.tipsFlag = true;
                     this.tipsText = '您输入的赔率范围应为1~1000之间'
                     return false
                 }
-                if(parseFloat(this.negativeValue) < 1 || parseFloat(this.negativeValue) > 1000){ 
+                if( (parseFloat(this.negativeValue) < 1 || parseFloat(this.negativeValue) > 1000)  || this.negativeValue == ''){ 
                     this.tipsFlag = true;
                     this.tipsText = '您输入的赔率范围应为1~1000之间'
+                    return false
+                }
+            }
+            if(flag == 'bets'){
+                if(parseFloat(this.inputNumValue) >= parseFloat(this.ANTNumber)){
+                    this.tipsFlag = true;
+                    this.tipsText = '已超出最大的投注类型!'
                     return false
                 }
             }

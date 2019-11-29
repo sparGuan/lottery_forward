@@ -14,7 +14,7 @@ export default {
 <style lang="less" scoped>
     .defaultPage{
         width: 100%;
-        padding: 30px 0 8px;
+        padding: 50px 0 8px;
     }
     .paddingT{
         padding-top: 100px;
@@ -22,8 +22,8 @@ export default {
     .defaultPage img{
         margin: 0 auto 8px;
         display: block;
-        width: 80px;
-        height: 80px;
+        width: 50px;
+        height: 50px;
     }
     .defaultPage p{
         font-size: 14px;

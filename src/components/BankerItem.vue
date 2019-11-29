@@ -32,7 +32,7 @@ export default {
                 query: {
                     games_point_id: this.info.games_point_id,
                     games_room_id: this.info.id,
-                    isActive: this.info.isActive,
+                    isActive: this.info.isActive == 0 ? this.info.isActive : 1,
                 }
             })
         }

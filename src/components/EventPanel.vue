@@ -2,11 +2,11 @@
     <div :class="{list:true, betting: bettingAndBuilding == 'betting'}">
         <div class="list_top flex">
             <div class="list_top_item line flex flex_jc color_ff">
-                <img class="mr_8" :src="info.master_img_url" alt="">
+                <img class="mr_8" :src="info.master_img_url | imgurl" alt="">
                 <p class="fs_16 color_ff">{{ info.master_count }}</p>
             </div>
             <div class="list_top_item flex flex_jc color_ff">
-                <img class="mr_8" :src="info.slave_img_url" alt="">
+                <img class="mr_8" :src="info.slave_img_url | imgurl" alt="">
                 <p class="fs_16 color_ff">{{ info.slave_count }}</p>
             </div>
         </div>
@@ -46,7 +46,7 @@
             </div>
              <div v-if="bettingAndBuilding == 'betting'" :class="bettingAndBuilding == 'betting' ? 'list_content_row flex flex_aic' : 'list_content_row flex flex_jcsb flex_aic'">
                 <div class="content_row_item">金额</div>
-                <div :class="{content_row_item: true, ml_16: bettingAndBuilding == 'betting'}">{{ info.amount }} ANT</div>
+                <div :class="{content_row_item: true, ml_16: bettingAndBuilding == 'betting'}">{{ info.amount * info.consult  }} ANT</div>
             </div>
             <div v-if="bettingAndBuilding == 'building'" :class="bettingAndBuilding == 'betting' ? 'list_content_row flex flex_aic' : 'list_content_row flex flex_jcsb flex_aic'">
                 <div class="content_row_item">备用金</div>
@@ -110,7 +110,7 @@ export default {
                     query: {
                         games_point_id: this.info.games_point_id,
                         games_room_id: this.info.games_room_id,
-                        isActive: 0,
+                        isActive: this.bettingAndBuilding == 'betting' ? 1 : 0,
                     }
                 })
             }
@@ -121,7 +121,7 @@ export default {
         // 时间格式转换
         transformTime(timestamp = +new Date()) {
             if (timestamp) {
-                var time = new Date(parseInt(timestamp));
+                var time = new Date(parseInt(timestamp)*1000);
                 var y = time.getFullYear(); 
                 var M = time.getMonth() + 1;
                 var d = time.getDate(); 
@@ -192,7 +192,8 @@ export default {
             }
             .list_content_right{
                 img{
-                    width: 22px;
+                    margin-top: -1px;
+                    width: 9px;
                     height: 22px;
                 }
                  &.greenColor{
@@ -228,7 +229,8 @@ export default {
                 right: 16px;
                 bottom: 16px;
                 img{
-                    width: 22px;
+                    margin-top: -1px;
+                    width: 9px;
                     height: 22px;
                 }
                 .active{
