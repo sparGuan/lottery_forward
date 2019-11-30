@@ -111,6 +111,7 @@ export default {
                         games_point_id: this.info.games_point_id,
                         games_room_id: this.info.games_room_id,
                         isActive: this.bettingAndBuilding == 'betting' ? 1 : 0,
+                        history: true
                     }
                 })
             }

@@ -12,8 +12,7 @@ import axios from "@/assets/script/axios-config.js"; //请求拦截
 Vue.prototype.$axios = axios;
 
 // flag = true 庄家， false 玩家
-var flag = true,
-    parameter = {}
+var flag = false, parameter = {};
 if(flag){
     parameter = {
         "text": {

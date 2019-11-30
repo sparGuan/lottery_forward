@@ -69,7 +69,6 @@
 
 <script>
 import { Interface } from '@/assets/script/api/Interface.js'
-import { setInterval } from 'timers';
 export default {
     name: 'bankerRoom',
     data(){
@@ -97,7 +96,8 @@ export default {
             timer: null,
             toast: null,
             ANTNumber: 0,
-            showUpdataPage: false
+            showUpdataPage: false,
+            myRoomCount: 0
         }
     },
     created(){
@@ -110,7 +110,7 @@ export default {
         next();
     },
     activated() {
-        if(!this.$route.meta.isBack || this.isFirstEnter){
+        if(!this.$route.meta.isBack || this.isFirstEnter || this.$route.query.history){
             this.showUpdataPage = false;
             this.getMatchDetail();
         }
@@ -127,7 +127,10 @@ export default {
         },
         history(){
             this.$router.push({
-                name: 'makeRecord'
+                name: 'makeRecord',
+                query: {
+                    history: true
+                }
             })
         },
         selectTabbar(data, index){
@@ -148,6 +151,19 @@ export default {
                 this.record = res.data.record[0];
                 if(this.$route.query.isActive != 2){
                     this.roomData(this.$route.query.games_room_id)
+                }
+                // 获取初始房间的长度
+                if(this.$route.query.isActive == 2){
+                    this.$request({
+                        ...Interface.roomgames_roomsearch,
+                        data: {
+                            games_point_id: this.$route.query.games_point_id,
+                            page: 1,
+                            pageSize: 20
+                        }
+                    }, res => {
+                        this.myRoomCount = res.data.totalRecord;
+                    })
                 }
             })
         },
@@ -262,13 +278,16 @@ export default {
                 ...Interface.roomgames_roomsearch,
                 data: {
                     games_point_id: this.$route.query.games_point_id,
+                    games_room_id: '',
                     page: 1,
-                    pageSize: 10
+                    pageSize: 20
                 }
             }, res => {
-                if(res.data.record.length > 0){
+                console.log(res, "老房间数据")
+                if(res.data.totalRecord > this.myRoomCount){
                     this.toast.clear();
-                    var id = res.data.record.length > 0  ? res.data.record[0].id : 0;
+                    var id = res.data.record[0].id;
+                    console.log(res,id, '新房间数据')
                     this.roomData(id)
                 }else{
                     this.updataRoom()

@@ -12,7 +12,7 @@
                 <span class="fs_12">参考赔率：主@{{ record.master_consult }}，平@{{ record.flat_consult }}，客@{{ record.slave_consult }}</span>
             </div>
             <div class="MarketRight">
-                <span class="color_ff fs_16" @click="bankerRoom" v-if="mankerBtnShow">我来做庄</span>
+                <span class="color_ff fs_16" @click="bankerRoom">我来做庄</span>
             </div>
         </div>
         <div v-show="pageShow" class="inputFill flex flex_aic flex_jc">
@@ -57,8 +57,7 @@ export default {
             record: {},
             bankerList:[],
             totalRecord: 0,
-            pageShow: false,
-            mankerBtnShow: false
+            pageShow: false
         }
     },  
     created(){
@@ -81,9 +80,9 @@ export default {
     },
     methods: {
         initData(){
-            this.getScrollData();
             this.getMatchDetail();
             this.getMyselfRoom();
+            this.getScrollData();
         },
         back(){
             this.$router.go(-1)
@@ -115,26 +114,38 @@ export default {
             this.seachMove = false;
         },
         onLoad(){
-            this.getScrollData()
+            if(this.inputValue.length > 0){
+                this.inputSearch();
+            }else{
+                this.getScrollData();
+            }
         },
         // 庄家搜索功能
         inputData(){
             this.bankerList = [];
+            this.pageContent.page = 1;
+            if(this.inputValue.length > 0){
+                this.inputSearch();
+            }else{
+                this.getScrollData();
+                this.getMyselfRoom();
+            }
+        },
+        inputSearch(){
             this.$request({
                 ...Interface.roomgames_roomsearch,
                 data: {
                     games_point_id: this.$route.query.id,
-                    created_by: this.inputValue,
-                    page: 1,
-                    pageSize: 10
+                    games_room_id: this.inputValue,
+                    ...this.pageContent
                 }
             }, res => {
-                this.totalRecord = res.data.totalRecord;
-                this.pageContent.page += 1;
+                this.pageContent.page += 1
                 this.loading = false;
                 this.finished = res.data.record.length < this.pageContent.pageSize;
-                this.bankerList = this.bankerList.concat(res.data.record);
+                this.bankerList = this.bankerList.concat(res.data.record)
             },err => {
+                this.pageContent.page = 1;
                 this.loading = false;
                 this.error = true;
             })
@@ -144,12 +155,13 @@ export default {
                 ...Interface.roomgames_roomsearch,
                 data: {
                     games_point_id: this.$route.query.id,
-                    page: 1,
-                    pageSize: 10
+                    games_room_id: '',
+                    ...this.pageContent
                 }
             }, res => {
-                this.mankerBtnShow = res.data.record.length == 0;
-                this.bankerList.unshift(res.data.record[0])
+                for(let i=res.data.record.length-1; i>=0; i--){
+                    this.bankerList.unshift(res.data.record[i])
+                }
             })
         },
         // 获取所有庄家房间
@@ -179,7 +191,6 @@ export default {
                 }
             }, res => {
                 this.pageShow = true;
-                console.log(res, "获取赛事详情")
                 this.record = res.data.record[0]
             })
         }

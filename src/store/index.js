@@ -3,13 +3,14 @@ import Vuex from 'vuex'
 import VuexPersistence from 'vuex-persist'
 
 const vuexLocal = new VuexPersistence({
-    storage: window.localStorage
+    storage: window.sessionStorage
 })
+
 
 Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
-        StatusBarHeight: 64,
+        StatusBarHeight: 64
     },
     mutations: {
         getHeaderHeight(state, data){

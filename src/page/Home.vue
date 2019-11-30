@@ -2,8 +2,8 @@
     <div class="wrapper">
         <Gheader bgcolor="linear-gradient(90deg,rgba(41,50,60,1) 0%,rgba(72,85,99,1) 100%)" @go-back="back" box_bottom="true" :indexback="false" @showImg="history" :showRight="true">
             <div class="center flex flex_aic" slot="top_select">
-                <img src="@/assets/img/common/logo.png" alt="">
-                <span class="title fs_18 fb color_ff ml_5">apple123</span>
+                <!-- <img src="@/assets/img/common/logo.png" alt=""> -->
+                <span class="title fs_18 fb color_ff ml_5">体育竞猜</span>
             </div>
         </Gheader>
         <div class="swipe_lunbo w100">

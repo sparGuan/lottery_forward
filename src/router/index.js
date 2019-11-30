@@ -6,7 +6,6 @@ const BankerList = () => import('@/page/BankerList.vue')
 const MakeRecord = () => import('@/page/MakeRecord.vue')
 const BankerRoom = () => import('@/page/BankerRoom.vue')
 
-
 Vue.use(Router)
 
 const router = new Router({

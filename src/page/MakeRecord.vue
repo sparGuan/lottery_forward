@@ -81,8 +81,9 @@ export default {
         next();
     },
     activated() {
-        if(!this.$route.meta.isBack || this.isFirstEnter){
-            // this.getBetsData();
+        if(!this.$route.meta.isBack || this.isFirstEnter || this.$route.query.history){
+            this.init();
+            this.getBetsData();
         }
         this.$route.meta.isBack = false;
         this.isFirstEnter = false;
@@ -90,6 +91,10 @@ export default {
     methods: {
         back(){
             this.$router.go(-1)
+        },
+        init(){
+            this.pageContent.page = 1;
+            this.eventPanelData = [];
         },
         onLoad(){
             this.getBetsData();

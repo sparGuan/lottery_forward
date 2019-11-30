@@ -6,7 +6,7 @@
             </div>
             <div class="FootListMiddle">
                 <div class="FootListMiddleTop flex flex_aic">
-                    <p class="fs_16 color_ff">{{ info.created_by }}</p>
+                    <p class="fs_16 color_ff">{{ info.id }}</p>
                     <span class="fs_11 color_ff text_center" v-if="info.isActive == 0">自己</span>
                 </div>
                 <p class="persen fs_12 mt_2">赔率：主@{{ info.master_consult }}，平@{{ info.flat_consult }}，客@{{ info.slave_consult }}</p>
