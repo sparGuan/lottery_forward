@@ -10,7 +10,7 @@
             </div>
         </Gheader>
         <ul class="matchTabbar flex" :style="{ top: headerH + 'px' }">
-            <li @click="selectTabbar(item, index)" :class="matchTabbarIndex == index ? 'active' : ''" v-for="(item, index) in matchTabbar" :key="index">{{ item }}
+            <li @click="selectTabbar(item, index)" :class="matchTabbarIndex == index ? 'active flex_shk' : 'flex_shk'" v-for="(item, index) in matchTabbar" :key="index">{{ item }}
                 <img v-if="matchTabbarIndex == index" src="@/assets/img/common/triangle.png" alt="">
             </li>
         </ul>
@@ -23,6 +23,7 @@
                 @load="onLoad"
                 finished-text="没有更多了"
                 :finished="finished"
+                :immediate-check="false"
             >
                 <EventPanel :bettingAndBuilding="bettingAndBuilding" :info="item" @receiveprize="receiveprize" v-for="(item, index) in eventPanelData" :key="index"/>
              </van-list>
@@ -44,7 +45,7 @@ export default {
             error: false,
             finished: false,
             headerIndex: 1,
-            matchTabbar: ['全部', '待开奖', '已中奖', '未中奖'],
+            matchTabbar: ['全部', '待开奖', '已中奖', '未中奖', '已取消'],
             matchTabbarIndex: 0,
             bettingAndBuilding: 'betting',
             eventPanelData: [],
@@ -62,7 +63,8 @@ export default {
             receiveInterface: null,
             receiveInterfaceParameter: {},
             isFirstEnter: true,
-            vanlist: true
+            vanlist: true,
+            toast: null
         }
     },  
     computed: {
@@ -106,7 +108,7 @@ export default {
             this.eventPanelData = [];
             this.loading = this.finished = false;
             if(index == 1){
-                this.matchTabbar = ['全部', '待开奖', '已中奖', '未中奖'];
+                this.matchTabbar = ['全部', '待开奖', '已中奖', '未中奖', '已取消'];
                 this.bettingAndBuilding = 'betting';
                 this.selectionInterface = Interface.player_order_record;
                 this.pageContent = {
@@ -116,7 +118,7 @@ export default {
                     is_win: ''
                 }
             }else{
-                this.matchTabbar = ['全部', '待开奖', '已开奖'];
+                this.matchTabbar = ['全部', '待开奖', '已开奖', '已取消'];
                 this.bettingAndBuilding = 'building';
                 this.selectionInterface = Interface.bankerOrderRecordBanker_order_record;
                 this.pageContent = {
@@ -127,6 +129,7 @@ export default {
             }
             this.$nextTick(()=>{
                 this.vanlist = true;
+                this.getBetsData();
             })
         },
         selectTabbar(data, index){
@@ -145,15 +148,20 @@ export default {
                         this.pageContent.is_win = '';
                         break;
                     case 1: 
-                        this.pageContent.status = this.pageContent.is_win = 0;
+                        this.pageContent.status = 0;
+                        this.pageContent.is_win = "";
                         break;
                     case 2: 
-                        this.pageContent.status = 2;
+                        this.pageContent.status = 1;
                         this.pageContent.is_win = 1;
                         break;
                     case 3: 
-                        this.pageContent.status = 2;
+                        this.pageContent.status = 1;
                         this.pageContent.is_win = 0;
+                        break;
+                    case 4: 
+                        this.pageContent.status = 2;
+                        this.pageContent.is_win = '';
                         break;
                 }
             }else if(this.bettingAndBuilding == 'building'){
@@ -170,11 +178,15 @@ export default {
                         break;
                     case 2: 
                         this.pageContent.status = 2;
-                        break;
+                        break; 
+                    case 3: 
+                        this.pageContent.status = 3;
+                        break;                        
                 }
             }
             this.$nextTick(()=>{
                 this.vanlist = true;
+                this.getBetsData();
             })
         },
         receiveprize(data){
@@ -217,8 +229,8 @@ export default {
                         { key: data.bet_to_flag_amount+'@'+data.flat_consult+"x", value: data.result == 1 ? '-' +(data.bet_to_flag_amount*data.flat_consult) + ' ANT' : '- -', name: '平仓', bg: '2'  },
                         { key: data.bet_to_slave_amount+'@'+data.slave_consult+"x", value: data.result == 2 ? '-' +(data.bet_to_slave_amount*data.slave_consult) + ' ANT' : '- -', name: '客胜', bg: '2'  },
                         { key: '庄盘总资金', value: data.pool_amount + ' ANT'  },
-                        { key: '手续费('+ data.commission +'%)', value: '-' + (data.commission/100 * data.pool_amount) + " ANT" },
-                        { key: '提现金额', value: data.pool_amount - (data.commission/100 * data.pool_amount) - this.deduction(data) + ' ANT'},
+                        { key: '手续费('+ data.commission +'%)', value: '-' + (data.commission/100 * (data.pool_amount - this.deduction(data) )) + " ANT" },
+                        { key: '提现金额', value: data.pool_amount - (data.commission/100 * (data.pool_amount - this.deduction(data)) )+ ' ANT'},
                     ]
                 }
                 if(data.is_receive == 0){
@@ -272,17 +284,20 @@ export default {
         },
         // 获取玩家下注数据
         getBetsData(){
+            this.toast = this.$toast.loading({duration: 0, forbidClick: true, message: '加载中。。。'});
             this.$request({
                 ...this.selectionInterface,
                 data: this.pageContent
             }, res => {
+                this.toast.clear();
                 this.pageContent.page += 1;
                 this.loading = false;
                 this.finished = res.data.record.length < this.pageContent.pageSize;
                 this.eventPanelData = this.eventPanelData.concat(res.data.record);
             },err => {
+                this.toast.clear();
                 this.pageContent.page = 1;
-                this.loading = false;
+                this.loading = this.finished = false;
                 this.error = true;
             })
         },
@@ -355,9 +370,11 @@ export default {
             width: 100%;
             height: 48px;
             background:linear-gradient(90deg,rgba(41,50,60,1) 0%,rgba(72,85,99,1) 100%);
+            overflow-x: scroll;
+            white-space: nowrap;
             li{
                 position: relative;
-                width: 25%;
+                width: 93.75px;
                 height: 100%;
                 text-align: center;
                 line-height: 48px;

@@ -2,7 +2,7 @@
     <div class="marketItem flex flex_aic flex_jcbt" v-if="info">
         <div class="flex flex_aic flex1">
             <div class="FootListLeft">
-                <span class="color_ff fs_16 fb text_center">庄</span>
+                <span class="color_ff fs_16 fb text_center" :style="{background: bgColor[index%5] }">庄</span>
             </div>
             <div class="FootListMiddle">
                 <div class="FootListMiddleTop flex flex_aic">
@@ -21,10 +21,16 @@ export default {
     name: 'BankerItem',
     data(){
         return {
-
+            bgColor: {
+                '0': 'rgba(239,172,24,1)', 
+                '1': 'rgba(5,182,207,1)',
+                '2': 'rgba(2,145,241,1)', 
+                '3': 'rgba(5,207,135,1)', 
+                '4': 'rgba(252,77,77,1)' 
+            }
         }
     },
-    props: ['info'],
+    props: ['info', 'index'],
     methods: {
         approach(){
             this.$router.push({
@@ -54,7 +60,6 @@ export default {
             display: block;
             width: 30px;
             height: 30px;
-            background: rgba(239, 172, 24, 1);
             line-height: 30px;
             border-radius: 50%;
         }

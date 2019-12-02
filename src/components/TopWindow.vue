@@ -26,8 +26,8 @@
                 <div class="title">分享比赛</div>
                 <div class="desc">阿拉特阿美尼亚VS班特列</div>
                 <div class="result">欧盘胜平负</div>
-                <div class="textArea">阿拉特阿美尼亚VS班特列阿拉特阿美尼亚VS班特列阿拉特阿美尼亚VS班特列阿拉特阿美尼亚VS班特列阿拉特阿美尼亚VS班特列阿拉特阿美尼亚VS班特列</div>
-                <div class="shareBtn">点击复制，分享比赛</div>
+                <div class="textArea">{{ shareText }}</div>
+                <div class="shareBtnCopy" @click="copy" data-clipboard-action="copy" :data-clipboard-text="shareText">点击复制，分享比赛</div>
             </div>
         </div>
     </div>
@@ -38,17 +38,31 @@ export default {
     name: "TopWindow",
     data(){
         return {
-            shareFlag: false
+            shareFlag: false,
+            shareText: ''
         }
     },
     props: ['record'],
+    mounted(){
+        this.shareText = `分享比賽#${this.record.gameName}#【${this.record.master_count}】vs【${this.record.slave_count}】比賽哈希：111111111111111111111111111111111@◣復制整段文字口令可在AntPocket-App內自動識別◢`
+    },
     methods: {
         share(){
-            console.log("share")
             this.shareFlag = true;
         },
         closeShare(){
             this.shareFlag = false;
+        },
+        copy(){
+            let clipboard = new this.clipboard('.shareBtnCopy');
+            let _this = this;
+            clipboard.on('success',function(){
+                _this.$toast('复制成功');
+                _this.closeShare();
+            })
+            clipboard.on('error',function(){
+                _this.$toast('复制失败');
+            })
         }
     }    
 }
@@ -127,54 +141,54 @@ export default {
             margin-top: -151.5px;
             background: #fff;
             border-radius: 5px;
-        .title{
-            margin: 24px auto 8px;
-            font-size: 18px;
-            font-weight: 600;
-            color:rgba(0,0,0,1);
-            text-align: center;
-        }
-        .desc{
-            font-size: 15px;
-            text-align: center;
-            font-weight: 400;
-            color:rgba(0,0,0,1);
-        }
-        .result{
-            margin: 8px auto 0;
-            width: 72px;
-            height: 22px;
-            line-height: 22px;
-            text-align: center;
-            font-size: 11px;
-            font-family: "PingFangSC-Regular", "PingFang SC";
-            font-weight: 400;
-            color:rgba(255,255,255,1);
-            background: rgba(255, 144, 0, 1);
-            border-radius: 11px;
-        }
-        .textArea{
-            box-sizing: border-box;
-            padding: 8px;
-            margin: 16px auto 16px;
-            width: 311px;
-            background:rgba(245,245,245,.8);
-            color:rgba(41,50,60,1);
-            font-size: 12px;
-        }
-        .shareBtn{
-            margin: 0 auto;
-            width: 259px;
-            height: 48px;
-            text-align: center;
-            line-height: 48px;
-            background:rgba(5,182,207,1);
-            border-radius: 5px;
-            font-size: 16px;
-            font-family: "PingFangSC-Semibold", "PingFang SC";
-            font-weight: 600;
-            color:rgba(255,255,255,1);
-        }
+            .title{
+                margin: 24px auto 8px;
+                font-size: 18px;
+                font-weight: 600;
+                color:rgba(0,0,0,1);
+                text-align: center;
+            }
+            .desc{
+                font-size: 15px;
+                text-align: center;
+                font-weight: 400;
+                color:rgba(0,0,0,1);
+            }
+            .result{
+                margin: 8px auto 0;
+                width: 72px;
+                height: 22px;
+                line-height: 22px;
+                text-align: center;
+                font-size: 11px;
+                font-family: "PingFangSC-Regular", "PingFang SC";
+                font-weight: 400;
+                color:rgba(255,255,255,1);
+                background: rgba(255, 144, 0, 1);
+                border-radius: 11px;
+            }
+            .textArea{
+                box-sizing: border-box;
+                padding: 8px;
+                margin: 16px auto 16px;
+                width: 311px;
+                background:rgba(245,245,245,.8);
+                color:rgba(41,50,60,1);
+                font-size: 12px;
+            }
+            .shareBtn,.shareBtnCopy{
+                margin: 0 auto;
+                width: 259px;
+                height: 48px;
+                text-align: center;
+                line-height: 48px;
+                background:rgba(5,182,207,1);
+                border-radius: 5px;
+                font-size: 16px;
+                font-family: "PingFangSC-Semibold", "PingFang SC";
+                font-weight: 600;
+                color:rgba(255,255,255,1);
+            }
         }
     }
 </style>

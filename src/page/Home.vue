@@ -275,9 +275,7 @@ export default {
             })
         },
         bannergopage(data){
-            this.$router.push({
-                path: data.addr_url
-            })
+            window.location.href = "http://"+ data.addr_url
         }
     }
 }

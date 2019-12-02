@@ -22,8 +22,10 @@
                 {{ info.name }} <span>胜平负</span>
             </div>
             <div v-show="bettingAndBuilding == 'building'" :class="info.result == null ? 'list_content_right fs_16 fb' : 'list_content_right fs_16 fb greenColor'" @click="jumpRoom">
-                {{ info.result == null ? '待开奖' : '已开奖' }}
-                <img v-if="info.result == null" src="@/assets/img/common/more.png" alt="">
+                <span v-if="info.status == 1">已取消</span>
+                <span v-if="info.result == null && info.status == 0">待开奖</span>
+                <span v-if="info.result != null">已开奖</span>
+                <img v-if="info.result == null && info.status == 0" src="@/assets/img/common/more.png" alt="">
             </div>
         </div>
 
@@ -46,7 +48,7 @@
             </div>
              <div v-if="bettingAndBuilding == 'betting'" :class="bettingAndBuilding == 'betting' ? 'list_content_row flex flex_aic' : 'list_content_row flex flex_jcsb flex_aic'">
                 <div class="content_row_item">金额</div>
-                <div :class="{content_row_item: true, ml_16: bettingAndBuilding == 'betting'}">{{ info.amount * info.consult  }} ANT</div>
+                <div :class="{content_row_item: true, ml_16: bettingAndBuilding == 'betting'}">{{ info.amount }} ANT</div>
             </div>
             <div v-if="bettingAndBuilding == 'building'" :class="bettingAndBuilding == 'betting' ? 'list_content_row flex flex_aic' : 'list_content_row flex flex_jcsb flex_aic'">
                 <div class="content_row_item">备用金</div>
@@ -63,18 +65,24 @@
                 </div>
             </div>
             <div class="buttonBtn flex flex_aic fs_16 fb" v-show="bettingAndBuilding == 'betting'" @click="jumpRoom">
-                <span v-if="info.result == null">待开奖</span>
-                <span class="active" v-if="info.is_win == 1">已中奖</span>
+                <span v-if="info.status == 1">已取消</span>
+                <span v-if="info.result == null && info.status == 0">待开奖</span>
+                <span v-if="info.is_win == 1" class="active">已中奖</span>
                 <span v-if="info.result != null && info.is_win == 0">未中奖</span>
-                <img v-if="info.result == null" src="@/assets/img/common/more.png" alt="">
+                <img v-if="info.result == null && info.status == 0" src="@/assets/img/common/more.png" alt="">
             </div>
         </div> 
         <!-- 领奖按钮 -->
-        <div :class="info.is_receive == 0 ? 'list_bottom flex flex_aic flex_jc fs_16 greenColor' : 'list_bottom flex flex_aic flex_jc fs_16'"  @click="receiveprize(info)"
-            v-if="(bettingAndBuilding == 'betting' && info.is_win == 1) || 
-                  (bettingAndBuilding == 'building' && info.result != null)"
+        <div 
+            :class="info.is_receive == 0 ? 'list_bottom flex flex_aic flex_jc fs_16 greenColor' : 'list_bottom flex flex_aic flex_jc fs_16'"  
+            @click="receiveprize(info)"
+            v-if="(bettingAndBuilding == 'betting' && info.is_win == 1) || (bettingAndBuilding == 'building' && info.result != null) || (bettingAndBuilding == 'building' && info.result == null && info.status == 1)"
         >
-            {{ btnName[bettingAndBuilding][info.is_receive] }}<img :src="info.is_receive == 0 ? require('@/assets/img/common/greenMore.png') : require('@/assets/img/common/more.png')" alt="">
+            {{ info.status == 1 ? '资金已原路退回' : btnName[bettingAndBuilding][info.is_receive] }}
+            <img 
+                v-if="(bettingAndBuilding == 'betting' && info.is_win == 1) || (bettingAndBuilding == 'building' && info.result != null)" 
+                :src="info.is_receive == 0 ? require('@/assets/img/common/greenMore.png') : require('@/assets/img/common/more.png')" alt=""
+            >
         </div>
     </div>
 </template>
@@ -85,11 +93,6 @@ export default {
     props: [ 'bettingAndBuilding', 'info' ],
     data(){
         return {
-            lotteryStatus: {
-                '0': "待开奖",
-                '1': "已中奖",
-                '2': "未中奖"
-            },
             btnName: {
                 'betting': {
                     '0': "未领奖",
@@ -117,6 +120,7 @@ export default {
             }
         },
         receiveprize(data){
+            if(this.info.status == 1) return false;
             this.$emit('receiveprize',data)
         },
         // 时间格式转换
@@ -193,7 +197,7 @@ export default {
             }
             .list_content_right{
                 img{
-                    margin-top: -1px;
+                    margin-left: 6px;
                     width: 9px;
                     height: 22px;
                 }
@@ -230,7 +234,7 @@ export default {
                 right: 16px;
                 bottom: 16px;
                 img{
-                    margin-top: -1px;
+                    margin-left: 6px;
                     width: 9px;
                     height: 22px;
                 }

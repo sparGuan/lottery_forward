@@ -18,7 +18,7 @@ export default {
         height: 100%; 
         background-color: #1a242e;
         .van-toast.van-toast--middle{
-            z-index: 12 !important;
+            z-index: 2000 !important;
         }
     }
     #app{

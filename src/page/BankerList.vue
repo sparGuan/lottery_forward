@@ -24,17 +24,19 @@
             <span v-show="seachMove" class="close fs_14" @click="closeInput">取消</span>
         </div>
         <div class="scrollData">
-            <van-list
-                v-model="loading"
-                :error.sync="error"
-                error-text="请求失败，点击重新加载"
-                @load="onLoad"
-                finished-text="没有更多了"
-                :finished="finished"
-                :immediate-check="false"
-            >
-                <BankerItem v-for="(item, index) in bankerList" :key="index" :info="item"></BankerItem>
-            </van-list>
+            <van-pull-refresh v-model="isLoading" @refresh="onRefresh">
+                <van-list
+                    v-model="loading"
+                    :error.sync="error"
+                    error-text="请求失败，点击重新加载"
+                    @load="onLoad"
+                    finished-text="没有更多了"
+                    :finished="finished"
+                    :immediate-check="false"
+                >
+                    <BankerItem v-for="(item, index) in bankerList" :key="index" :info="item" :index="index"></BankerItem>
+                </van-list>
+            </van-pull-refresh>
         </div>
     </div>
 </template>
@@ -57,7 +59,9 @@ export default {
             record: {},
             bankerList:[],
             totalRecord: 0,
-            pageShow: false
+            pageShow: false,
+            isLoading: false,
+            onRefreshFlag: false
         }
     },  
     created(){
@@ -79,6 +83,17 @@ export default {
         this.isFirstEnter = false;
     },
     methods: {
+        onRefresh(){
+            this.bankerList = [];
+            this.pageContent.page = 1;
+            this.onRefreshFlag = true;
+            this.getMyselfRoom();
+            this.getScrollData();
+            setTimeout(() => {
+                this.$toast('刷新成功');
+                this.isLoading = false;
+            }, 500);
+        },
         initData(){
             this.getMatchDetail();
             this.getMyselfRoom();
@@ -132,6 +147,7 @@ export default {
             }
         },
         inputSearch(){
+            console.log("inputSearch")
             this.$request({
                 ...Interface.roomgames_roomsearch,
                 data: {
@@ -146,19 +162,26 @@ export default {
                 this.bankerList = this.bankerList.concat(res.data.record)
             },err => {
                 this.pageContent.page = 1;
-                this.loading = false;
+                this.loading = this.finished = false;
                 this.error = true;
             })
         },
         getMyselfRoom(){
+            console.log(this.$route.query.id, '搜索房间ID')
+            var id = this.$route.query.id;
             this.$request({
                 ...Interface.roomgames_roomsearch,
                 data: {
-                    games_point_id: this.$route.query.id,
+                    ...this.pageContent,
                     games_room_id: '',
-                    ...this.pageContent
+                    games_point_id: this.$route.query.id
                 }
             }, res => {
+                if(this.onRefreshFlag){
+                    this.onRefreshFlag = false;
+                    this.$toast('刷新成功');
+                    this.isLoading = false;
+                }
                 for(let i=res.data.record.length-1; i>=0; i--){
                     this.bankerList.unshift(res.data.record[i])
                 }
@@ -171,6 +194,11 @@ export default {
                 ...Interface.roomGames_room,
                 data: this.pageContent
             }, res => {
+                if(this.onRefreshFlag){
+                    this.onRefreshFlag = false;
+                    this.$toast('刷新成功');
+                    this.isLoading = false;
+                }
                 this.totalRecord = res.data.totalRecord;
                 this.pageContent.page += 1;
                 this.loading = false;
@@ -178,7 +206,7 @@ export default {
                 this.bankerList = this.bankerList.concat(res.data.record);
             },err => {
                 this.pageContent.page = 1;
-                this.loading = false;
+                this.loading = this.finished = false;
                 this.error = true;
             })
         },

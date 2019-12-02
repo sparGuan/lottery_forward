@@ -23,7 +23,7 @@ const request = (params, callback, error) => {
         headers: headers
     };
     if (type == "get") {
-        obj.url = obj.url + '?' + qs.stringify( params.data)
+        obj.url = obj.url + '?' + qs.stringify(params.data)
     } else if (type == "post") {
         obj.data = params.data;
     }

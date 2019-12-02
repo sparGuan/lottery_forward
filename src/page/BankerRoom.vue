@@ -2,7 +2,7 @@
     <div class="bankerRoom">
         <Gheader bgcolor="linear-gradient(90deg,rgba(41,50,60,1) 0%,rgba(72,85,99,1) 100%)" @go-back="back" :box_bottom="true" @showImg="history" :showRight="true">
             <div class="center flex flex_aic" slot="top_select">
-                <span class="title fs_18 fb color_ff">123456的庄</span>
+                <span class="title fs_18 fb color_ff">{{ roomInfo.created_by }}的庄</span>
             </div>
         </Gheader>
         <TopWindow :record="record"></TopWindow>
@@ -29,14 +29,14 @@
                             </p>
                             <p class="mayCast mt_16 fs_14">{{ parseFloat(roomInfo.master_bet_amount).toFixed(2) }} ANT</p>
                         </li>
-                        <li class="flat flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', index, 1, roomInfo.id)">
+                        <li class="flat flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', index, 2, roomInfo.id)">
                             <p class="odds flex flex_aic fs_16 fb">
                                 {{ roomInfo.flat_consult }}
                                 <span>平局</span>
                             </p>
                             <p class="mayCast mt_16 fs_14">{{ parseFloat(roomInfo.flat_bet_amount).toFixed(2) }} ANT</p>
                         </li>
-                        <li class="negative flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', index, 2, roomInfo.id)">
+                        <li class="negative flex1 flex flex_fdc flex_jc flex_aic" @click="inputEvent('bets', index, 1, roomInfo.id)">
                             <p class="odds flex flex_aic fs_16 fb color_ff">
                                 {{ roomInfo.slave_consult }}
                                 <span>客胜</span>
@@ -111,6 +111,7 @@ export default {
     },
     activated() {
         if(!this.$route.meta.isBack || this.isFirstEnter || this.$route.query.history){
+            this.bankerFlag = true;
             this.showUpdataPage = false;
             this.getMatchDetail();
         }
@@ -195,9 +196,9 @@ export default {
                     if(this.parameter.bet_to == 0){
                         this.ANTNumber = res.data.record[0].master_bet_amount
                     }else if(this.parameter.bet_to == 1){
-                        this.ANTNumber = res.data.record[0].flat_bet_amount
-                    }else if(this.parameter.bet_to == 2){
                         this.ANTNumber = res.data.record[0].slave_bet_amount
+                    }else if(this.parameter.bet_to == 2){
+                        this.ANTNumber = res.data.record[0].flat_bet_amount
                     }else{
                         this.ANTNumber = 0
                     }
@@ -223,7 +224,7 @@ export default {
                     information: this.record
                 }
             }
-            if(this.$route.query.isActive != 0){
+            if(this.$route.query.isActive == 1 || ((this.$route.query.isActive == 2) && flag == 'banker')){
                 this.inputBettingFlag = true;
             }
         },
@@ -283,11 +284,9 @@ export default {
                     pageSize: 20
                 }
             }, res => {
-                console.log(res, "老房间数据")
                 if(res.data.totalRecord > this.myRoomCount){
                     this.toast.clear();
                     var id = res.data.record[0].id;
-                    console.log(res,id, '新房间数据')
                     this.roomData(id)
                 }else{
                     this.updataRoom()
@@ -310,6 +309,7 @@ export default {
                     }
                 }, res => {
                     this.toast.clear();
+                    this.$toast("操作成功")
                     this.closeInputBetting();
                 },err => {
                     console.log(err, "玩家下单失败")
@@ -328,9 +328,7 @@ export default {
                     ]
                 }
                 this.confirmInformationFlag = true;
-            }
-            
-            
+            } 
         }
     }
 }

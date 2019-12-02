@@ -208,7 +208,7 @@ export default {
                 }
             }
             if(flag == 'bets'){
-                if(parseFloat(this.inputNumValue) >= parseFloat(this.ANTNumber)){
+                if(parseFloat(this.inputNumValue) > parseFloat(this.ANTNumber)){
                     this.tipsFlag = true;
                     this.tipsText = '已超出最大的投注类型!'
                     return false
@@ -217,6 +217,11 @@ export default {
             if(this.inputNumValue[0] == 0 && this.inputNumValue[1] == 0){
                 this.tipsFlag = true;
                 this.tipsText = '请输入正确的数量值'
+                return false;
+            }
+            if((parseFloat(this.inputNumValue) < 100) && this.parameter.type == 'banker'){
+                this.tipsFlag = true;
+                this.tipsText = '佣金不能小于100'
                 return false;
             }
             if(this.numberTesting(this.inputNumValue)){
